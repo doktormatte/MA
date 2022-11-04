@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 import sys 
-from workalendar.europe import Scotland
 
 def roundTime(dt=None):    
     dt = dt.to_pydatetime()
@@ -45,15 +44,6 @@ def conv_timestamp(ts):
     mins = int(time_arr[1])
     return (hours*60+mins)//15
 
-def get_day_of_week(ts):
-    return ts.weekday()
-
-def get_day_of_month(ts):
-    return ts.day
-
-def get_day_of_year(ts):
-    return ts.timetuple().tm_yday
-
 def get_day_index(ts):
     idx = ts.weekday()
     if idx == 6:
@@ -64,22 +54,6 @@ def get_weekend(ts):
     if ts.weekday() > 4:
         return 1
     return 0
-
-def get_sin(x, x_max):
-    return np.sin(2.0*np.pi*x/x_max)
-
-def get_cos(x, x_max):
-    return np.cos(2.0*np.pi*x/x_max)
-
-
-def get_holiday(ts):
-    year = ts.year
-    cal = Scotland()
-    holidays = cal.holidays(year)
-    for holiday in holidays:
-        if holiday[0] == datetime.date.fromtimestamp(datetime.datetime.timestamp(ts)):
-            return 1
-    return 0   
 
 def calc_session_dur(row):
     sess_dur = (row['Total kWh']/50.0)*60.0
@@ -172,22 +146,18 @@ df_dundee = df_dundee[df_dundee.z_score_ene <= 3.0]
 # df_dundee['Load_per_quarter'] = df_dundee.apply(lambda row: calc_quarter_load(row), axis=1)
 
 stations = list(set(list(df_dundee['CP ID'])))
-# stations = [50338.0]
+stations = [50338.0]
 start = cutoff
-end = datetime.datetime.strptime("2018-12-06 00:00", '%Y-%m-%d %H:%M')
-# end = datetime.datetime.strptime("2017-03-11 00:00", '%Y-%m-%d %H:%M')
+end = datetime.datetime.strptime("2017-03-31 00:00", '%Y-%m-%d %H:%M')
 # end = df_dundee['End_Timestamp'].max()
 
-# df_dundee[df_dundee['CP ID'] == 50338.0].to_csv('/home/doktormatte/MA_SciComp/test_loads.csv', encoding='utf-8',header=list(df_dundee))
+df_dundee[df_dundee['CP ID'] == 50338.0].to_csv('/home/doktormatte/MA_SciComp/test_loads.csv', encoding='utf-8',header=list(df_dundee))
 # sys.exit()  
 
 
 stat_backbones = dict.fromkeys(stations)
 load_weekday_averages = dict.fromkeys(stations)
 load_weekend_averages = dict.fromkeys(stations)
-
-occup_weekday_averages = dict.fromkeys(stations)
-occup_weekend_averages = dict.fromkeys(stations)
 
 glob_week_averages = pd.DataFrame({'timeslot': list(range(96))})
 glob_week_averages['avg_value'] = 0.0 
@@ -226,7 +196,6 @@ for stat_name in stations:
 
     df_dundee_stat = df_dundee[df_dundee['CP ID'] == stat_name]        
     df_dundee_stat.apply(lambda row: add_to_backbones(row, stat_name), axis=1)  
-    print(stat_name)
     
 
 
@@ -237,27 +206,9 @@ for stat_name in stations:
     backbone_load_quarter = pd.DataFrame({'date_time': pd.date_range(start, end + datetime.timedelta(minutes=15), freq="15min")})
     backbone_load_quarter = backbone_load_quarter.loc[:int(len(values_load_min)//15)-1,:]
     backbone_load_quarter.set_index('date_time')
-    
     backbone_load_quarter['timeslot'] = backbone_load_quarter['date_time'].apply(conv_timestamp)
-    max_timeslot = max(backbone_load_quarter['timeslot'])
-    backbone_load_quarter['day_of_week'] = backbone_load_quarter['date_time'].apply(get_day_of_week)
-    max_day_of_week = max(backbone_load_quarter['day_of_week'])
-    backbone_load_quarter['day_of_month'] = backbone_load_quarter['date_time'].apply(get_day_of_month)
-    max_day_of_month = max(backbone_load_quarter['day_of_month'])
-    backbone_load_quarter['day_of_year'] = backbone_load_quarter['date_time'].apply(get_day_of_year)
-    max_day_of_year = max(backbone_load_quarter['day_of_year'])
+    backbone_load_quarter['day_index'] = backbone_load_quarter['date_time'].apply(get_day_index)
     backbone_load_quarter['weekend'] = backbone_load_quarter['date_time'].apply(get_weekend)
-    backbone_load_quarter['holiday'] = backbone_load_quarter['date_time'].apply(get_holiday)
-      
-    backbone_load_quarter['timeslot_sin'] = backbone_load_quarter.apply(lambda x: get_sin(x['timeslot'], max_timeslot),axis=1)
-    backbone_load_quarter['timeslot_cos'] = backbone_load_quarter.apply(lambda x: get_cos(x['timeslot'], max_timeslot),axis=1)
-    backbone_load_quarter['day_of_week_sin'] = backbone_load_quarter.apply(lambda x: get_sin(x['day_of_week'], max_day_of_week),axis=1)
-    backbone_load_quarter['day_of_week_cos'] = backbone_load_quarter.apply(lambda x: get_cos(x['day_of_week'], max_day_of_week),axis=1)
-    backbone_load_quarter['day_of_month_sin'] = backbone_load_quarter.apply(lambda x: get_sin(x['day_of_month'], max_day_of_month),axis=1)
-    backbone_load_quarter['day_of_month_cos'] = backbone_load_quarter.apply(lambda x: get_cos(x['day_of_month'], max_day_of_month),axis=1)    
-    backbone_load_quarter['day_of_year_sin'] = backbone_load_quarter.apply(lambda x: get_sin(x['day_of_year'], max_day_of_year),axis=1)
-    backbone_load_quarter['day_of_year_cos'] = backbone_load_quarter.apply(lambda x: get_cos(x['day_of_year'], max_day_of_year),axis=1)      
-
     backbone_load_quarter['value'] = 0.0        
     quarter_loads = []           
     sum_loads = 0.0    
@@ -266,41 +217,20 @@ for stat_name in stations:
         if (i+1)%15 == 0:
             quarter_loads.append(sum_loads)                 
             sum_loads = 0.0       
-    backbone_load_quarter['value'] = quarter_loads        
+    backbone_load_quarter['value'] = quarter_loads    
     stat_backbones[stat_name][2] = backbone_load_quarter
     
     
     
-    
-    
     backbone_occup_min = stat_backbones[stat_name][1]
-    # backbone_occup_min.to_csv('/home/doktormatte/MA_SciComp/test_occup.csv', encoding='utf-8')
+    backbone_occup_min.to_csv('/home/doktormatte/MA_SciComp/test_occup.csv', encoding='utf-8')
     values_occup_min = backbone_occup_min['value'] 
     backbone_occup_quarter = pd.DataFrame({'date_time': pd.date_range(start, end + datetime.timedelta(minutes=15), freq="15min")})
     backbone_occup_quarter = backbone_occup_quarter.loc[:int(len(values_load_min)//15)-1,:]
     backbone_occup_quarter.set_index('date_time')
-    
     backbone_occup_quarter['timeslot'] = backbone_occup_quarter['date_time'].apply(conv_timestamp)
-    max_timeslot = max(backbone_occup_quarter['timeslot'])
-    backbone_occup_quarter['day_of_week'] = backbone_occup_quarter['date_time'].apply(get_day_of_week)
-    max_day_of_week = max(backbone_occup_quarter['day_of_week'])
-    backbone_occup_quarter['day_of_month'] = backbone_occup_quarter['date_time'].apply(get_day_of_month)
-    max_day_of_month = max(backbone_occup_quarter['day_of_month'])
-    backbone_occup_quarter['day_of_year'] = backbone_occup_quarter['date_time'].apply(get_day_of_year)
-    max_day_of_year = max(backbone_occup_quarter['day_of_year'])
+    backbone_occup_quarter['day_index'] = backbone_occup_quarter['date_time'].apply(get_day_index)
     backbone_occup_quarter['weekend'] = backbone_occup_quarter['date_time'].apply(get_weekend)
-    backbone_occup_quarter['holiday'] = backbone_occup_quarter['date_time'].apply(get_holiday)
-      
-    backbone_occup_quarter['timeslot_sin'] = backbone_occup_quarter.apply(lambda x: get_sin(x['timeslot'], max_timeslot),axis=1)
-    backbone_occup_quarter['timeslot_cos'] = backbone_occup_quarter.apply(lambda x: get_cos(x['timeslot'], max_timeslot),axis=1)
-    backbone_occup_quarter['day_of_week_sin'] = backbone_occup_quarter.apply(lambda x: get_sin(x['day_of_week'], max_day_of_week),axis=1)
-    backbone_occup_quarter['day_of_week_cos'] = backbone_occup_quarter.apply(lambda x: get_cos(x['day_of_week'], max_day_of_week),axis=1)
-    backbone_occup_quarter['day_of_month_sin'] = backbone_occup_quarter.apply(lambda x: get_sin(x['day_of_month'], max_day_of_month),axis=1)
-    backbone_occup_quarter['day_of_month_cos'] = backbone_occup_quarter.apply(lambda x: get_cos(x['day_of_month'], max_day_of_month),axis=1)    
-    backbone_occup_quarter['day_of_year_sin'] = backbone_occup_quarter.apply(lambda x: get_sin(x['day_of_year'], max_day_of_year),axis=1)
-    backbone_occup_quarter['day_of_year_cos'] = backbone_occup_quarter.apply(lambda x: get_cos(x['day_of_year'], max_day_of_year),axis=1) 
-    
-
     backbone_occup_quarter['value'] = 0
     quarter_occup = []
     sum_occup = 0
@@ -315,6 +245,10 @@ for stat_name in stations:
     backbone_occup_quarter['value'] = quarter_occup    
     stat_backbones[stat_name][3] = backbone_occup_quarter
     
+    
+    backbone_occup_quarter.to_csv('/home/doktormatte/MA_SciComp/test_quarter_occup.csv', encoding='utf-8')
+
+sys.exit()  
 
 for stat_name in stations:
     
@@ -323,13 +257,8 @@ for stat_name in stations:
     load_avg_weekend = pd.DataFrame({'timeslot': list(range(96))})
     load_avg_weekend['avg_value'] = 0.0      
     
-    occup_avg_weekday = pd.DataFrame({'timeslot': list(range(96))})
-    occup_avg_weekday['avg_value'] = 0.0      
-    occup_avg_weekend = pd.DataFrame({'timeslot': list(range(96))})
-    occup_avg_weekend['avg_value'] = 0.0      
     
-    
-    backbone_load = stat_backbones[stat_name][2]
+    backbone_load = stat_backbones[stat_name][0]
     load_weekday_averages[stat_name] = load_avg_weekday
     load_weekend_averages[stat_name] = load_avg_weekend
     
@@ -345,38 +274,17 @@ for stat_name in stations:
         load_avg_weekend.loc[load_avg_weekend['timeslot'] == i, 'avg_value']  = avg_value_load
     for i in range(96): 
         load_avg_weekend.loc[load_avg_weekend['timeslot'] == i, 'avg_value'] /= len(backbone_load[(backbone_load.timeslot == i) & (backbone_load.weekend == 1)])
-    load_weekend_averages[stat_name] = load_avg_weekend 
-    
-    
-    
-    backbone_occup = stat_backbones[stat_name][3]
-    
-    for i in range(96):    
-        avg_value_occup = len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.value == 1) & (backbone_occup.weekend == 0)]) / len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.weekend == 0)])
-        occup_avg_weekday.loc[occup_avg_weekday['timeslot'] == i, 'avg_value'] = avg_value_occup
-        
-        # glob_week_averages.loc[glob_week_averages['timeslot'] == i, 'avg_value_occup'] += avg_value_occup 
-    occup_weekday_averages[stat_name] = occup_avg_weekday
-        
-    for i in range(96):    
-        avg_value_occup = len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.value == 1) & (backbone_occup.weekend == 1)]) / len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.weekend == 1)])        
-        occup_avg_weekend.loc[occup_avg_weekend['timeslot'] == i, 'avg_value'] = avg_value_occup
-        
-        # glob_weekend_averages.loc[glob_weekend_averages['timeslot'] == i, 'avg_value'] += avg_value  
-    occup_weekend_averages[stat_name] = occup_avg_weekend
-    
+    load_weekend_averages[stat_name] = load_avg_weekend   
     print(stat_name)
     
     
-
-    
-    
+sys.exit()    
 print('\n')
 backbone_num = 1
 
 for stat_name in stations:
     
-   backbone_load = stat_backbones[stat_name][2]
+   backbone_load = stat_backbones[stat_name][0]
    
    backbone_load_weekday = backbone_load[backbone_load['weekend'] == 0]
    load_avg_weekday = load_weekday_averages[stat_name].T.drop(labels='timeslot', axis=0)
@@ -394,35 +302,7 @@ for stat_name in stations:
    
    file_name_load = "/home/doktormatte/MA_SciComp/Dundee/Loads/" + str(backbone_num) + ".csv"
    # file_name_load = "/home/doktormatte/MA_SciComp/Boulder/Loads/" + stat_name.replace('/', '') + ".csv"
-   sorted_backbone_load.to_csv(file_name_load, encoding='utf-8', index=False, header=False)
-   
-   
-    
-    
-   backbone_occup = stat_backbones[stat_name][3]
-   
-   backbone_occup_weekday = backbone_occup[backbone_occup['weekend'] == 0]
-   occup_avg_weekday = occup_weekday_averages[stat_name].T.drop(labels='timeslot', axis=0)
-   occup_weekday_data = pd.concat([occup_avg_weekday]*len(backbone_occup_weekday), ignore_index=True)
-   backbone_occup_weekday = pd.concat([backbone_occup_weekday.reset_index(drop=True), occup_weekday_data.reset_index(drop=True)], axis=1)
-   
-   backbone_occup_weekend = backbone_occup[backbone_occup['weekend'] == 1]
-   occup_avg_weekend = occup_weekend_averages[stat_name].T.drop(labels='timeslot', axis=0)
-   occup_weekend_data = pd.concat([occup_avg_weekend]*len(backbone_occup_weekend), ignore_index=True)
-   backbone_occup_weekend = pd.concat([backbone_occup_weekend.reset_index(drop=True), occup_weekend_data.reset_index(drop=True)], axis=1)
-   
-   sorted_backbone_occup = pd.concat([backbone_occup_weekday, backbone_occup_weekend]).sort_values(by=['date_time'], ascending=True)
-   sorted_backbone_occup['value_shifted'] = np.roll(sorted_backbone_occup['value'],-1)
-   sorted_backbone_occup.drop('date_time', axis=1, inplace=True)
-   
-   
-   
-   file_name_occup = "/home/doktormatte/MA_SciComp/Dundee/Occup/" + str(backbone_num) + ".csv"
-   
-   # file_name_occup = "/home/doktormatte/MA_SciComp/Boulder/Occup/" + stat_name.replace('/', '') + ".csv"
-   sorted_backbone_occup.to_csv(file_name_occup, encoding='utf-8', index=False, header=False)
-   
-   
+   sorted_backbone_load.to_csv(file_name_load, encoding='utf-8', index=False, header=False)   
    backbone_num += 1  
    
    print(stat_name)

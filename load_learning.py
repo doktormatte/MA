@@ -5,6 +5,10 @@ import numpy  as np
 #from matplotlib import pyplot
 import matplotlib.pyplot as plt
 import tensorflow as tf
+# config = tf.compat.v1.ConfigProto()
+# config.gpu_options.allow_growth = True
+# session = tf.compat.v1.Session(config=config)
+
 from tensorflow import keras
 from numpy import array 
 from keras.models import Sequential 
@@ -208,7 +212,7 @@ for i in range(100):
 timestr = time.strftime("%Y%m%d_%H%M%S")
 
 df_summary = pd.DataFrame(summary, columns=summary_cols)
-df_summary.to_csv("/home/doktormatte/MA_SciComp/exp_res_" + timestr + ".csv", encoding='utf-8')
+df_summary.to_csv("/home/doktormatte/MA_SciComp/load_exp_res_" + timestr + ".csv", encoding='utf-8')
 
 
 

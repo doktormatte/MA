@@ -2,6 +2,7 @@ import datetime
 import pandas as pd
 import numpy as np
 from scipy import stats
+from workalendar.usa import California
 
 def roundTime(dt=None):    
     dt = dt.to_pydatetime()
@@ -36,16 +37,26 @@ def conv_timestamp(ts):
     mins = int(time_arr[1])
     return (hours*60+mins)//15
 
-def get_day_index(ts):
-    idx = ts.weekday()
-    if idx == 6:
-        return 0
-    return idx+1
+def get_day_of_week(ts):
+    return ts.weekday()
+
+def get_day_of_month(ts):
+    return ts.day
+
+def get_day_of_year(ts):
+    return ts.timetuple().tm_yday
+
 
 def get_weekend(ts):
     if ts.weekday() > 4:
         return 1
     return 0
+
+def get_sin(x, x_max):
+    return np.sin(2.0*np.pi*x/x_max)
+
+def get_cos(x, x_max):
+    return np.cos(2.0*np.pi*x/x_max)
 
 
 def check_time_format(x):
@@ -54,6 +65,15 @@ def check_time_format(x):
         return True
     except Exception:
         return False
+    
+def get_holiday(ts):
+    year = ts.year
+    cal = California()
+    holidays = cal.holidays(year)
+    for holiday in holidays:
+        if holiday[0] == datetime.date.fromtimestamp(datetime.datetime.timestamp(ts)):
+            return 1
+    return 0    
 
 
 def add_to_backbones(row, stat_name):
@@ -142,7 +162,8 @@ stations = list(set(list(df_palo_alto['Station Name'])))
 
 # start = df_palo_alto['Start Date'].min()
 start = cutoff
-end = df_palo_alto['End Date'].max()
+end = datetime.datetime.strptime("3/1/2020 00:00", '%m/%d/%Y %H:%M')
+# end = df_palo_alto['End Date'].max()
 
 
 stat_backbones = dict.fromkeys(stations)
@@ -162,22 +183,60 @@ glob_weekend_averages['avg_value'] = 0.0
 
 for stat_name in stations:
     
-    backbone_load = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
-    backbone_load.set_index('date_time')
-    backbone_load['timeslot'] = backbone_load['date_time'].apply(conv_timestamp)
-    backbone_load['day_index'] = backbone_load['date_time'].apply(get_day_index)
-    backbone_load['weekend'] = backbone_load['date_time'].apply(get_weekend)
-    backbone_load['value'] = 0.0
+   backbone_load = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+   backbone_load.set_index('date_time')
+   
+   backbone_load['timeslot'] = backbone_load['date_time'].apply(conv_timestamp)
+   max_timeslot = max(backbone_load['timeslot'])
+   backbone_load['day_of_week'] = backbone_load['date_time'].apply(get_day_of_week)
+   max_day_of_week = max(backbone_load['day_of_week'])
+   backbone_load['day_of_month'] = backbone_load['date_time'].apply(get_day_of_month)
+   max_day_of_month = max(backbone_load['day_of_month'])
+   backbone_load['day_of_year'] = backbone_load['date_time'].apply(get_day_of_year)
+   max_day_of_year = max(backbone_load['day_of_year'])
+   backbone_load['weekend'] = backbone_load['date_time'].apply(get_weekend)
+   backbone_load['holiday'] = backbone_load['date_time'].apply(get_holiday)
+     
+   backbone_load['timeslot_sin'] = backbone_load.apply(lambda x: get_sin(x['timeslot'], max_timeslot),axis=1)
+   backbone_load['timeslot_cos'] = backbone_load.apply(lambda x: get_cos(x['timeslot'], max_timeslot),axis=1)
+   backbone_load['day_of_week_sin'] = backbone_load.apply(lambda x: get_sin(x['day_of_week'], max_day_of_week),axis=1)
+   backbone_load['day_of_week_cos'] = backbone_load.apply(lambda x: get_cos(x['day_of_week'], max_day_of_week),axis=1)
+   backbone_load['day_of_month_sin'] = backbone_load.apply(lambda x: get_sin(x['day_of_month'], max_day_of_month),axis=1)
+   backbone_load['day_of_month_cos'] = backbone_load.apply(lambda x: get_cos(x['day_of_month'], max_day_of_month),axis=1)    
+   backbone_load['day_of_year_sin'] = backbone_load.apply(lambda x: get_sin(x['day_of_year'], max_day_of_year),axis=1)
+   backbone_load['day_of_year_cos'] = backbone_load.apply(lambda x: get_cos(x['day_of_year'], max_day_of_year),axis=1)        
+   backbone_load['value'] = 0.0  
+
+   
+   
+   
+   backbone_occup = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+   backbone_occup.set_index('date_time')
+   
+   backbone_occup['timeslot'] = backbone_occup['date_time'].apply(conv_timestamp)
+   max_timeslot = max(backbone_occup['timeslot'])
+   backbone_occup['day_of_week'] = backbone_occup['date_time'].apply(get_day_of_week)
+   max_day_of_week = max(backbone_occup['day_of_week'])
+   backbone_occup['day_of_month'] = backbone_occup['date_time'].apply(get_day_of_month)
+   max_day_of_month = max(backbone_occup['day_of_month'])
+   backbone_occup['day_of_year'] = backbone_occup['date_time'].apply(get_day_of_year)
+   max_day_of_year = max(backbone_occup['day_of_year'])
+   backbone_occup['weekend'] = backbone_occup['date_time'].apply(get_weekend) 
+   backbone_occup['holiday'] = backbone_occup['date_time'].apply(get_holiday)
     
-    
-    backbone_occup = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
-    backbone_occup.set_index('date_time')
-    backbone_occup['timeslot'] = backbone_occup['date_time'].apply(conv_timestamp)
-    backbone_occup['day_index'] = backbone_occup['date_time'].apply(get_day_index)
-    backbone_occup['weekend'] = backbone_occup['date_time'].apply(get_weekend) 
-    backbone_occup['value'] = 0        
-    
-    stat_backbones[stat_name] = [backbone_load, backbone_occup]
+   backbone_occup['timeslot_sin'] = backbone_occup.apply(lambda x: get_sin(x['timeslot'], max_timeslot),axis=1)
+   backbone_occup['timeslot_cos'] = backbone_occup.apply(lambda x: get_cos(x['timeslot'], max_timeslot),axis=1)
+   backbone_occup['day_of_week_sin'] = backbone_occup.apply(lambda x: get_sin(x['day_of_week'], max_day_of_week),axis=1)
+   backbone_occup['day_of_week_cos'] = backbone_occup.apply(lambda x: get_cos(x['day_of_week'], max_day_of_week),axis=1)
+   backbone_occup['day_of_month_sin'] = backbone_occup.apply(lambda x: get_sin(x['day_of_month'], max_day_of_month),axis=1)
+   backbone_occup['day_of_month_cos'] = backbone_occup.apply(lambda x: get_cos(x['day_of_month'], max_day_of_month),axis=1)
+   backbone_occup['day_of_year_sin'] = backbone_occup.apply(lambda x: get_sin(x['day_of_year'], max_day_of_year),axis=1)
+   backbone_occup['day_of_year_cos'] = backbone_occup.apply(lambda x: get_cos(x['day_of_year'], max_day_of_year),axis=1)
+   backbone_occup['value'] = 0             
+
+   stat_backbones[stat_name] = [backbone_load, backbone_occup]
+   
+   print(stat_name)
     
     
 for stat_name in stations:
