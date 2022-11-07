@@ -238,7 +238,7 @@ for i in range(200):
                         for i in np.arange(m):  
                             for j in np.arange(t_target):  
                                     yhat[i][j] = temp[i][j]        
-                            val = 1-np.sqrt(((yhat[i,]-y_obs[i,:])**2).mean())
+                            val = 1.0-np.sqrt(((yhat[i,]-y_obs[i,:])**2).mean())
                             scores[i]=val       
                          
                         mean = np.mean(scores)     
@@ -252,7 +252,7 @@ for i in range(200):
                                 summary.append(meta)  
 
                 except KeyboardInterrupt:
-                    print(summary)
+                    # print(summary)
                     timestr = time.strftime("%Y%m%d_%H%M%S")                    
                     df_summary = pd.DataFrame(summary, columns=summary_cols)
                     df_summary.to_csv("/home/doktormatte/MA_SciComp/load_exp_res_" + timestr + ".csv", encoding='utf-8')
@@ -408,14 +408,14 @@ for i in range(200):
                                 b = json.dumps(a)
                                 df = pd.read_json(b)
                                 for index, row in df.iterrows():
-                                    meta = [row['name'], row['layers'], dirname + '_' + str(num), mean]
+                                    meta = [row['name'], row['layers'], dirname + '_' + str(num), 1.0-mean]
                                     summary.append(meta)
                                 
                         
                         
                         
                 except KeyboardInterrupt:
-                    print(summary)
+                    # print(summary)
                     timestr = time.strftime("%Y%m%d_%H%M%S")                
                     df_summary = pd.DataFrame(summary, columns=summary_cols)
                     df_summary.to_csv("/home/doktormatte/MA_SciComp/occup_exp_res_" + timestr + ".csv", encoding='utf-8')

@@ -3,8 +3,8 @@ from numpy import array
 # from sklearn.preprocessing import MinMaxScaler
 
 # dirs = ['Perth_Kinross']
-# dirs = ['ACN_2', 'ACN_1', 'Boulder', 'Dundee', 'Palo_Alto', 'Perth_Kinross']
-dirs = ['Perth_Kinross', 'Dundee']
+dirs = ['ACN_2', 'ACN_1', 'Boulder', 'Dundee', 'Palo_Alto', 'Perth_Kinross']
+# dirs = ['Perth_Kinross', 'Dundee']
 # dirs = ['ACN_2', 'ACN_1', 'Boulder', 'Palo_Alto']
 # dirs = ['Boulder', 'Palo_Alto']
 
@@ -13,18 +13,18 @@ dirs = ['Perth_Kinross', 'Dundee']
 modes = ['Occup']
 # scaler = MinMaxScaler(feature_range=(0, 1))
 
-for dirname in dirs:
-    for mode in modes:
-        for num in range(1,53):
-            try:
-                cols = list(range(112))           
-                df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '.csv', names = cols)            
-                df = df.drop(columns=df.iloc[:, 15:111])      
-                df = df.drop(columns=df.iloc[:, :4])
-                file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_red.csv'
-                df.to_csv(file_name, encoding='utf-8', index=False, header=False)
-            except Exception:
-                pass
+# for dirname in dirs:
+#     for mode in modes:
+#         for num in range(1,53):
+#             try:
+#                 cols = list(range(112))           
+#                 df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '.csv', names = cols)            
+#                 df = df.drop(columns=df.iloc[:, 15:111])      
+#                 df = df.drop(columns=df.iloc[:, :4])
+#                 file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_red.csv'
+#                 df.to_csv(file_name, encoding='utf-8', index=False, header=False)
+#             except Exception:
+#                 pass
             
             
             
@@ -68,32 +68,32 @@ for dirname in dirs:
 #         df_norm.to_csv(file_name, encoding='utf-8', index=False, header=False)
 
 
-# for dirname in dirs:
-#     for mode in modes:
-#         for num in range(1,53):
-#             try:
-#                 df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'.csv', names = list(range(112)))
+for dirname in dirs:
+    for mode in modes:
+        for num in range(1,53):
+            try:
+                df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'.csv', names = list(range(112)))
 
-#                 df_test_weekday = df_test[df_test[4] == 0]
-#                 df_test_weekday = df_test_weekday.iloc[:,15:111]
-#                 weekday_avg = df_test_weekday.iloc[0,:]
+                df_test_weekday = df_test[df_test[4] == 0]
+                df_test_weekday = df_test_weekday.iloc[:,15:111]
+                weekday_avg = df_test_weekday.iloc[0,:]
 
-#                 df_test_weekend = df_test[df_test[4] == 1]
-#                 df_test_weekend = df_test_weekend.iloc[:,15:111]
-#                 weekend_avg = df_test_weekend.iloc[0,:]
+                df_test_weekend = df_test[df_test[4] == 1]
+                df_test_weekend = df_test_weekend.iloc[:,15:111]
+                weekend_avg = df_test_weekend.iloc[0,:]
 
-#                 averages = pd.DataFrame()
-#                 averages['weekday'] = weekday_avg
-#                 averages['weekend'] = weekend_avg
-#                 averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_averages.csv', index=False)
+                averages = pd.DataFrame()
+                averages['weekday'] = weekday_avg
+                averages['weekend'] = weekend_avg
+                averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_averages.csv', index=False)
 
-#                 df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
-#                 df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
-#                 df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
-#                 header = ['t','dayofweek','weekend','y_t_1','y']
-#                 df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
-#             except Exception:
-#                 pass
+                df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
+                df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
+                df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
+                header = ['t','dayofweek','weekend','y_t_1','y']
+                df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
+            except Exception:
+                pass
 
 
         

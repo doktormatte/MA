@@ -311,48 +311,53 @@ for stat_name in stations:
 
 for stat_name in stations:
     
-    load_avg_weekday = pd.DataFrame({'timeslot': list(range(96))})
-    load_avg_weekday['avg_value'] = 0.0      
-    load_avg_weekend = pd.DataFrame({'timeslot': list(range(96))})
-    load_avg_weekend['avg_value'] = 0.0      
-    
+    df_pk_stat = df_pk[df_pk['CP ID'] == stat_name]        
+    df_pk_stat.apply(lambda row: add_to_backbones(row, stat_name), axis=1)        
     occup_avg_weekday = pd.DataFrame({'timeslot': list(range(96))})
     occup_avg_weekday['avg_value'] = 0.0      
     occup_avg_weekend = pd.DataFrame({'timeslot': list(range(96))})
     occup_avg_weekend['avg_value'] = 0.0      
     
+    load_avg_weekday = pd.DataFrame({'timeslot': list(range(96))})
+    load_avg_weekday['avg_value'] = 0.0      
+    load_avg_weekend = pd.DataFrame({'timeslot': list(range(96))})
+    load_avg_weekend['avg_value'] = 0.0    
     
     backbone_load = stat_backbones[stat_name][2]
+    train_test_split = 0.7
+    n_train = int(train_test_split*len(backbone_load)) 
+    backbone_load_clipped = backbone_load[:n_train]
     load_weekday_averages[stat_name] = load_avg_weekday
     load_weekend_averages[stat_name] = load_avg_weekend
     
     for i in range(96): 
-        avg_value_load = backbone_load[(backbone_load.timeslot == i) & (backbone_load.weekend == 0)].value.sum()
+        avg_value_load = backbone_load_clipped[(backbone_load_clipped.timeslot == i) & (backbone_load_clipped.weekend == 0)].value.sum()
         load_avg_weekday.loc[load_avg_weekday['timeslot'] == i, 'avg_value']  = avg_value_load
     for i in range(96): 
-        load_avg_weekday.loc[load_avg_weekday['timeslot'] == i, 'avg_value'] /= len(backbone_load[(backbone_load.timeslot == i) & (backbone_load.weekend == 0)])
+        load_avg_weekday.loc[load_avg_weekday['timeslot'] == i, 'avg_value'] /= len(backbone_load_clipped[(backbone_load_clipped.timeslot == i) & (backbone_load_clipped.weekend == 0)])
     load_weekday_averages[stat_name] = load_avg_weekday
     
     for i in range(96): 
-        avg_value_load = backbone_load[(backbone_load.timeslot == i) & (backbone_load.weekend == 1)].value.sum()
+        avg_value_load = backbone_load_clipped[(backbone_load_clipped.timeslot == i) & (backbone_load_clipped.weekend == 1)].value.sum()
         load_avg_weekend.loc[load_avg_weekend['timeslot'] == i, 'avg_value']  = avg_value_load
     for i in range(96): 
-        load_avg_weekend.loc[load_avg_weekend['timeslot'] == i, 'avg_value'] /= len(backbone_load[(backbone_load.timeslot == i) & (backbone_load.weekend == 1)])
-    load_weekend_averages[stat_name] = load_avg_weekend 
-    
+        load_avg_weekend.loc[load_avg_weekend['timeslot'] == i, 'avg_value'] /= len(backbone_load_clipped[(backbone_load_clipped.timeslot == i) & (backbone_load_clipped.weekend == 1)])
+    load_weekend_averages[stat_name] = load_avg_weekend
     
     
     backbone_occup = stat_backbones[stat_name][3]
+    n_train = int(train_test_split*len(backbone_occup)) 
+    backbone_occup_clipped = backbone_occup[:n_train]
     
     for i in range(96):    
-        avg_value_occup = len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.value == 1) & (backbone_occup.weekend == 0)]) / len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.weekend == 0)])
+        avg_value_occup = len(backbone_occup_clipped[(backbone_occup_clipped.timeslot == i) & (backbone_occup_clipped.value == 1) & (backbone_occup_clipped.weekend == 0)]) / len(backbone_occup_clipped[(backbone_occup_clipped.timeslot == i) & (backbone_occup_clipped.weekend == 0)])
         occup_avg_weekday.loc[occup_avg_weekday['timeslot'] == i, 'avg_value'] = avg_value_occup
         
         # glob_week_averages.loc[glob_week_averages['timeslot'] == i, 'avg_value_occup'] += avg_value_occup 
     occup_weekday_averages[stat_name] = occup_avg_weekday
         
     for i in range(96):    
-        avg_value_occup = len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.value == 1) & (backbone_occup.weekend == 1)]) / len(backbone_occup[(backbone_occup.timeslot == i) & (backbone_occup.weekend == 1)])        
+        avg_value_occup = len(backbone_occup_clipped[(backbone_occup_clipped.timeslot == i) & (backbone_occup_clipped.value == 1) & (backbone_occup_clipped.weekend == 1)]) / len(backbone_occup_clipped[(backbone_occup_clipped.timeslot == i) & (backbone_occup_clipped.weekend == 1)])        
         occup_avg_weekend.loc[occup_avg_weekend['timeslot'] == i, 'avg_value'] = avg_value_occup
         
         # glob_weekend_averages.loc[glob_weekend_averages['timeslot'] == i, 'avg_value'] += avg_value  

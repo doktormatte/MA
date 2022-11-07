@@ -106,13 +106,16 @@ def read_data(string,string2, n_steps_in,n_steps_out,n_features):
 
 
 dirs = ['ACN_1', 'ACN_2', 'Boulder', 'Palo_Alto', 'Dundee', 'Perth_Kinross']
+dirs.reverse()
+modes = ['Loads','Occup']
+mode = random.randint(0, 1)
+mode = 0
 # dirs = ['ACN_1']
 iteration = 0
 summary_cols = ['names','layers','dataset','accuracy']
 
 for i in range(200):
-    try:
-        # summary = []
+    if mode == 0:
         summary = pd.DataFrame(columns=summary_cols)
         for i in range(5):
             try:            
@@ -164,9 +167,24 @@ for i in range(200):
                         model = Model(inputs=[input1, input2], outputs=output) 
                         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
                         history = model.fit([X_train, X2_train], y_train, epochs=n_epoch, batch_size=bat_size,shuffle=False)
-                    
-                        test_pred = model.predict([X_test,X2_test])
-                        accuracy = 1.0 - np.sqrt((((test_pred-y_test)**2).mean(axis=1)).mean())
+                        
+                        temp = model.predict([X_test,X2_test])
+                        m,n=temp.shape 
+                        t_target = n_steps_out
+                           
+                        yhat=np.zeros((m,t_target))
+                        y_obs=np.array(y_test[0:m,0:t_target])
+                        scores= np.zeros(m)
+                        
+                        for i in np.arange(m):  
+                            for j in np.arange(t_target):  
+                                    if temp[i][j]>= 0.5:
+                                        yhat[i][j]= 1                
+                            val = sum(abs(yhat[i,]-y_obs[i,:]))/t_target                                  
+                            scores[i]=val       
+                         
+                        mean = np.mean(scores)   
+                        accuracy = 1.0 - mean
                         accuracies.append(accuracy)
                         
                     if not (model is None):
@@ -180,6 +198,9 @@ for i in range(200):
                     
                     
             except KeyboardInterrupt:
+                timestr = time.strftime("%Y%m%d_%H%M%S")       
+                summary.to_csv("/home/doktormatte/MA_SciComp/occup_hybrid_exp_res_" + timestr + ".csv", encoding='utf-8')                
+                summary = pd.DataFrame(columns=summary_cols)
                 print('\n')
                 print('interrupt to continue ...')
                 print('\n')
@@ -190,13 +211,110 @@ for i in range(200):
                     except KeyboardInterrupt:
                         loop_forever = False                    
                 continue
-    
-    
-        timestr = time.strftime("%Y%m%d_%H%M%S")       
-        summary.to_csv("/home/doktormatte/MA_SciComp/occup_hybrid_exp_res_" + timestr + ".csv", encoding='utf-8')
         
-    except KeyboardInterrupt:
-        break
+        
+    else:
+        try:
+            # summary = []
+            summary = pd.DataFrame(columns=summary_cols)
+            for i in range(5):
+                try:            
+                    for dirname in dirs:                
+                        
+                        n_steps_in = 12
+                        n_features = 1
+                        n_steps_out = 6
+                        dropout_1 = random.randint(1,60)/100.0 
+                        dropout_2 = random.randint(1,60)/100.0 
+                        n_n_lstm = random.randint(8,128)
+                        bat_size = random.randint(64,512)    
+                        n_epoch = 3
+                        
+                        dense_1 = random.randint(4,128)
+                        dense_2 = random.randint(4,128)
+                        dense_3 = random.randint(4,128)
+                        dense_4 = random.randint(4,128)                                          
+                        
+                        accuracies = []
+                        model = None
+                        # for num in range(1,53):
+                            
+                        station_1 = '/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) + '_occup.csv'
+                        station_2 = '/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) + '_averages.csv'
+                        X_train,y_train,X_test,y_test,X2_train,X2_test=read_data(station_1,station_2,n_steps_in,n_steps_out,n_features)
+      
+                        
+                        iteration += 1
+                        print('\n')
+                        print('ITERATION ' + str(iteration))
+                        print(dirname)
+                        print('\n')                    
+                        
+                        input1 = keras.Input(shape=(n_steps_in, n_features))
+                        input2 = keras.Input(shape=(99,))  
+                        model_LSTM=LSTM(n_n_lstm)(input1)
+                        model_LSTM=Dropout(dropout_1)(model_LSTM)
+                        model_LSTM=Dense(dense_1, activation='relu')(model_LSTM)
+    
+                        meta_layer = keras.layers.Dense(99, activation="relu")(input2)
+                        meta_layer = keras.layers.Dense(dense_2, activation="relu")(meta_layer)    
+                        meta_layer = keras.layers.Dense(dense_3, activation="relu")(meta_layer)
+                        model_merge = keras.layers.concatenate([model_LSTM, meta_layer])
+                        model_merge = Dense(dense_4, activation='relu')(model_merge)
+                        model_merge = Dropout(dropout_2)(model_merge)    
+                        output = Dense(n_steps_out, activation='sigmoid')(model_merge)
+                        model = Model(inputs=[input1, input2], outputs=output) 
+                        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+                        history = model.fit([X_train, X2_train], y_train, epochs=n_epoch, batch_size=bat_size,shuffle=False)
+                        
+                        temp = model.predict([X_test,X2_test])
+                        m,n=temp.shape 
+                        t_target = n_steps_out
+                           
+                        yhat=np.zeros((m,t_target))
+                        y_obs=np.array(y_test[0:m,0:t_target])
+                        scores= np.zeros(m)
+                        
+                        for i in np.arange(m):  
+                            for j in np.arange(t_target):  
+                                    if temp[i][j]>= 0.5:
+                                        yhat[i][j]= 1                
+                            val = sum(abs(yhat[i,]-y_obs[i,:]))/t_target                                  
+                            scores[i]=val       
+                         
+                        mean = np.mean(scores)   
+                        accuracy = 1.0 - mean
+                        accuracies.append(accuracy)
+                        
+                    if not (model is None):
+                        a = model.get_config()
+                        results = pd.DataFrame(columns=summary_cols)
+                        results['layers'] = a['layers']
+                        results['names'] = a['name']
+                        results['dataset'] = dirname
+                        results['accuracy'] = np.mean(accuracies)
+                        summary = pd.concat([summary, results])
+                        
+                        
+                except KeyboardInterrupt:
+                    timestr = time.strftime("%Y%m%d_%H%M%S")       
+                    summary.to_csv("/home/doktormatte/MA_SciComp/occup_hybrid_exp_res_" + timestr + ".csv", encoding='utf-8')                
+                    summary = pd.DataFrame(columns=summary_cols)
+                    print('\n')
+                    print('interrupt to continue ...')
+                    print('\n')
+                    loop_forever = True
+                    while loop_forever:                        
+                        try:
+                            time.sleep(60)
+                        except KeyboardInterrupt:
+                            loop_forever = False                    
+                    continue  
+    
+        
+        
+        except KeyboardInterrupt:
+            break
 
 
 
