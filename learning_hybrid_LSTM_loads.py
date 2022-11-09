@@ -113,7 +113,7 @@ mode = 1
 iteration = 0
 summary_cols = ['names','layers','dataset','accuracy']
 
-for i in range(200):
+for i in range(2000):
     if mode == 0:
         summary = pd.DataFrame(columns=summary_cols)
         for i in range(5):
@@ -230,7 +230,7 @@ for i in range(200):
                         dropout_2 = random.randint(1,60)/100.0 
                         n_n_lstm = random.randint(8,128)
                         bat_size = random.randint(64,512)    
-                        n_epoch = 3
+                        n_epoch = 60
                         
                         dense_1 = random.randint(4,128)
                         dense_2 = random.randint(4,128)
@@ -248,7 +248,7 @@ for i in range(200):
                         
                         iteration += 1
                         print('\n')
-                        print('ITERATION ' + str(iteration))
+                        print('ITERATION ' + str(iteration) + ' hybrid loads')
                         print(dirname)
                         print('\n')                    
                         

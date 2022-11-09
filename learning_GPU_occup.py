@@ -19,7 +19,6 @@ from keras.layers import Dense,Dropout,Flatten,TimeDistributed
 # from keras.layers import Dense,Dropout,TimeDistributed
 # from keras.layers import BatchNormalization 
 # from keras.layers import Bidirectional
-
 from keras.layers.convolutional import Conv1D
 from keras.layers.convolutional import MaxPooling1D 
 # from keras.models import Model 
@@ -31,9 +30,22 @@ import random
 # import time
 
 
+from tensorflow.compat.v1 import ConfigProto
+from tensorflow.compat.v1 import InteractiveSession
+
 
 SEED = 0
-os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+# os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'
+
+# config = tf.ConfigProto()
+# config.gpu_options.allow_growth = True
+# 
+# session = tf.Session(config=config)
+
+config = ConfigProto()
+config.gpu_options.per_process_gpu_memory_fraction = 0.9
+config.gpu_options.allow_growth = True
+session = InteractiveSession(config=config)
 
 
 def set_seeds(seed=SEED):
@@ -52,9 +64,6 @@ def set_global_determinism(seed=SEED):
 
 set_global_determinism(seed=SEED)
 
-
-def normalize(x):
-    return (x-min(x))/(max(x)-min(x))  
 
 def pause():
     input("Press the <ENTER> key to continue...")
@@ -113,15 +122,24 @@ train_test_split = 0.7
 iteration = 0
 
 
-for i in range(200):
+for i in range(2000):
     try:
         mode = random.randint(0,1)    
-        mode = 1
+        mode = 0
         
         if mode == 1:
             summary = []
             for i in range(5):    
                 try:            
+                    stacked = random.randint(0,1)
+                    nodes_1 = random.randint(8,128)
+                    nodes_2 = random.randint(4,64)
+                    dense_1 = random.randint(4,128)
+                    activation = random.randint(0,1)
+                    dropout = random.randint(1,60)/100.0            
+                    epochs = 60
+                    batch_size = random.randint(64,256)
+                    architecture = random.choice(architectures)  
                     for dirname in dirs:
                         iteration += 1
                         print('\n')
@@ -137,15 +155,7 @@ for i in range(200):
                         nf_2 = 16
                         ker_size = 4
                     
-                        stacked = random.randint(0,1)
-                        nodes_1 = random.randint(8,128)
-                        nodes_2 = random.randint(4,64)
-                        dense_1 = random.randint(4,128)
-                        activation = random.randint(0,1)
-                        dropout = random.randint(1,60)/100.0            
-                        epochs = 3
-                        batch_size = random.randint(64,256)
-                        architecture = random.choice(architectures)            
+          
                         if architecture == 'Conv1D' or architecture == 'ConvLSTM':            
                             ker_size=1            
                         
@@ -282,7 +292,7 @@ for i in range(200):
         
         else:
             summary = []
-            for i in range(2):
+            for i in range(5):
                 try:            
                     for dirname in dirs:                
                         n_features = 11
@@ -316,7 +326,7 @@ for i in range(200):
                             
                             iteration += 1
                             print('\n')
-                            print('ITERATION ' + str(iteration))
+                            print('ITERATION ' + str(iteration) + ' non-hybrid occup')
                             print(dirname)
                             print('\n')
                             

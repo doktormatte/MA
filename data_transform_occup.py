@@ -1,5 +1,6 @@
 import pandas as pd
 from numpy import array 
+import numpy as np
 # from sklearn.preprocessing import MinMaxScaler
 
 # dirs = ['Perth_Kinross']
@@ -9,8 +10,8 @@ dirs = ['ACN_2', 'ACN_1', 'Boulder', 'Dundee', 'Palo_Alto', 'Perth_Kinross']
 # dirs = ['Boulder', 'Palo_Alto']
 
 # dirs = ['Palo_Alto']
-# modes = ['Loads']
 modes = ['Occup']
+# modes = ['Occup', 'Loads']
 # scaler = MinMaxScaler(feature_range=(0, 1))
 
 # for dirname in dirs:
@@ -21,14 +22,14 @@ modes = ['Occup']
 #                 df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '.csv', names = cols)            
 #                 df = df.drop(columns=df.iloc[:, 15:111])      
 #                 df = df.drop(columns=df.iloc[:, :4])
-#                 file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_red.csv'
-#                 df.to_csv(file_name, encoding='utf-8', index=False, header=False)
+#                 file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_red_header.csv'
+#                 df.to_csv(file_name, encoding='utf-8', index=False, header=['a','b','c','d','e','f','g','h','i','j','k','l'])
 #             except Exception:
 #                 pass
             
             
             
-# for dirname in dirs:
+# for dirname in dirs: 
 #     for mode in modes:
 #         sum_loads = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/1_red.csv', names = list(range(12)))
 #         # df_init = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/1_red.csv', names = cols)
@@ -44,8 +45,8 @@ modes = ['Occup']
 #                         sum_loads[column] += df[column]  
 #             except Exception:
 #                 pass
-#         file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum.csv'
-#         sum_loads.to_csv(file_name, encoding='utf-8', index=False, header=False)
+#         file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum_header.csv'
+#         sum_loads.to_csv(file_name, encoding='utf-8', index=False, header=['a','b','c','d','e','f','g','h','i','j','k','l'])
         
         
         
@@ -68,32 +69,62 @@ modes = ['Occup']
 #         df_norm.to_csv(file_name, encoding='utf-8', index=False, header=False)
 
 
+# for dirname in dirs:
+#     for mode in modes:
+#         for num in range(1,53):
+#             try:
+#                 df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'.csv', names = list(range(112)))
+
+#                 df_test_weekday = df_test[df_test[4] == 0]
+#                 df_test_weekday = df_test_weekday.iloc[:,15:111]
+#                 weekday_avg = df_test_weekday.iloc[0,:]
+
+#                 df_test_weekend = df_test[df_test[4] == 1]
+#                 df_test_weekend = df_test_weekend.iloc[:,15:111]
+#                 weekend_avg = df_test_weekend.iloc[0,:]
+
+#                 averages = pd.DataFrame()
+#                 averages['weekday'] = weekday_avg
+#                 averages['weekend'] = weekend_avg
+#                 averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_averages.csv', index=False)
+
+#                 df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
+#                 df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
+#                 df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
+#                 header = ['t','dayofweek','weekend','y_t_1','y']
+#                 df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
+#             except Exception:
+#                 pass
+
+
+
+timesteps = 3
 for dirname in dirs:
     for mode in modes:
         for num in range(1,53):
+            
             try:
-                df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'.csv', names = list(range(112)))
-
-                df_test_weekday = df_test[df_test[4] == 0]
-                df_test_weekday = df_test_weekday.iloc[:,15:111]
-                weekday_avg = df_test_weekday.iloc[0,:]
-
-                df_test_weekend = df_test[df_test[4] == 1]
-                df_test_weekend = df_test_weekend.iloc[:,15:111]
-                weekend_avg = df_test_weekend.iloc[0,:]
-
-                averages = pd.DataFrame()
-                averages['weekday'] = weekday_avg
-                averages['weekend'] = weekend_avg
-                averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_averages.csv', index=False)
-
-                df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
-                df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
-                df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
-                header = ['t','dayofweek','weekend','y_t_1','y']
-                df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Occup/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
-            except Exception:
+                df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_red_header.csv', skiprows = 1, names = list(range(12)), low_memory=False)
+                df_shifts = pd.DataFrame()
+                for column in df:
+                    if column < 10:
+                        df_shifts[column] = df[column]
+                    if column == 10:
+                        x = df[column]
+                        df_shifts[column] = df[column]
+                        for step in range(1, timesteps+1):
+                            df_shifts[column + step] = np.roll(x,-step)
+                                    
+                            
+                df_shifts = df_shifts[:-timesteps]
+                file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/' + str(num) + '_shifted_red_header.csv'
+                df_shifts.to_csv(file_name, encoding='utf-8', index=False, header=['a','b','c','d','e','f','g','h','i','j','k','l','m','n'])
+                
+            except Exception as e:
+                # print(e)
                 pass
+        
+        
 
 
         

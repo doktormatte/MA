@@ -113,7 +113,7 @@ train_test_split = 0.7
 iteration = 0
 
 
-for i in range(200):
+for i in range(2000):
     try:
         mode = random.randint(0,1)    
         mode = 1
@@ -125,7 +125,7 @@ for i in range(200):
                     for dirname in dirs:
                         iteration += 1
                         print('\n')
-                        print('ITERATION ' + str(iteration))
+                        print('ITERATION ' + str(iteration) + ' non-hybrid loads')
                         print(dirname)
                         print('\n')
                         
@@ -143,7 +143,7 @@ for i in range(200):
                         dense_1 = random.randint(4,128)
                         activation = random.randint(0,1)
                         dropout = random.randint(1,60)/100.0            
-                        epochs = 3
+                        epochs = 60
                         batch_size = random.randint(64,256)
                         architecture = random.choice(architectures)            
                         if architecture == 'Conv1D' or architecture == 'ConvLSTM':            

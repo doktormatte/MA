@@ -108,31 +108,31 @@ def read_data(string,string2, n_steps_in,n_steps_out,n_features):
 dirs = ['ACN_1', 'ACN_2', 'Boulder', 'Palo_Alto', 'Dundee', 'Perth_Kinross']
 dirs.reverse()
 mode = random.randint(0, 1)
-mode = 1
+mode = 0
 # dirs = ['ACN_1']
 iteration = 0
 summary_cols = ['names','layers','dataset','accuracy']
 
-for i in range(200):
+for i in range(2000):
     if mode == 0:
         summary = pd.DataFrame(columns=summary_cols)
         for i in range(5):
-            try:            
-                for dirname in dirs:                
-                    
-                    n_steps_in = 12
-                    n_features = 1
-                    n_steps_out = 6
-                    dropout_1 = random.randint(1,60)/100.0 
-                    dropout_2 = random.randint(1,60)/100.0 
-                    n_n_lstm = random.randint(8,128)
-                    bat_size = random.randint(64,512)    
-                    n_epoch = 60
-                    
-                    dense_1 = random.randint(4,128)
-                    dense_2 = random.randint(4,128)
-                    dense_3 = random.randint(4,128)
-                    dense_4 = random.randint(4,128)                                          
+            try:          
+                n_steps_in = 3
+                n_features = 1
+                n_steps_out = 3
+                dropout_1 = random.randint(1,60)/100.0 
+                dropout_2 = random.randint(1,60)/100.0 
+                n_n_lstm = random.randint(8,128)
+                bat_size = random.randint(64,512)    
+                n_epoch = 60
+                
+                dense_1 = random.randint(4,128)
+                dense_2 = random.randint(4,128)
+                dense_3 = random.randint(4,128)
+                dense_4 = random.randint(4,128)  
+                
+                for dirname in dirs:                                                                      
                     
                     accuracies = []
                     model = None
@@ -146,7 +146,7 @@ for i in range(200):
                         
                         iteration += 1
                         print('\n')
-                        print('ITERATION ' + str(iteration))
+                        print('ITERATION ' + str(iteration) + ' hybrid occup')
                         print(dirname)
                         print('\n')                    
                         
@@ -230,7 +230,7 @@ for i in range(200):
                         dropout_2 = random.randint(1,60)/100.0 
                         n_n_lstm = random.randint(8,128)
                         bat_size = random.randint(64,512)    
-                        n_epoch = 3
+                        n_epoch = 60
                         
                         dense_1 = random.randint(4,128)
                         dense_2 = random.randint(4,128)

@@ -52,57 +52,57 @@ modes = ['Loads']
         
         
         
-# for dirname in dirs:
-#     for mode in modes:
-#         df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum.csv', names = list(range(12)))
-#         df_norm = pd.DataFrame()
-#         for column in df:
-#             n_train=int(train_test_split*len(df[column])) 
-#             if column == 10:                
-#                 x = df[column]
-#                 x_train = x[:n_train]
-#                 x_train = (x_train-min(x_train))/(max(x_train)-min(x_train))                
-#                 x_test = x[n_train:]
-#                 x_test = (x_test-min(x_test))/(max(x_test)-min(x_test))     
-#                 merged_col = pd.concat([x_train, x_test])             
-#                 df_norm[column] = merged_col
-#                 df_norm[column + 1] = np.roll(merged_col,-1)
-#             else:
-#                 if column != 11:
-#                     y = df[column]
-#                     df_norm[column] = y
-        
-#         file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum_red.csv'
-#         df_norm.to_csv(file_name, encoding='utf-8', index=False, header=False)
-        
-        
-        
 for dirname in dirs:
     for mode in modes:
+        df = pd.read_csv ('/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum.csv', names = list(range(12)))
+        df_norm = pd.DataFrame()
+        for column in df:
+            n_train=int(train_test_split*len(df[column])) 
+            if column == 10:                
+                x = df[column]
+                x_train = x[:n_train]
+                x_train = (x_train-min(x_train))/(max(x_train)-min(x_train))                
+                x_test = x[n_train:]
+                x_test = (x_test-min(x_test))/(max(x_test)-min(x_test))     
+                merged_col = pd.concat([x_train, x_test])             
+                df_norm[column] = merged_col
+                df_norm[column + 1] = np.roll(merged_col,-1)
+            else:
+                if column != 11:
+                    y = df[column]
+                    df_norm[column] = y
+        
+        file_name = '/home/doktormatte/MA_SciComp/' + dirname + '/' + mode + '/sum_red_header.csv'
+        df_norm.to_csv(file_name, encoding='utf-8', index=False, header=['a','b','c','d','e','f','g','h','i','j','k','l'])
+        
+        
+        
+# for dirname in dirs:
+#     for mode in modes:
 
-        try:
-            df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/1.csv', names = list(range(112)))
+#         try:
+#             df_test = pd.read_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/1.csv', names = list(range(112)))
 
-            df_test_weekday = df_test[df_test[4] == 0]
-            df_test_weekday = df_test_weekday.iloc[:,15:111]
-            weekday_avg = df_test_weekday.iloc[0,:]
+#             df_test_weekday = df_test[df_test[4] == 0]
+#             df_test_weekday = df_test_weekday.iloc[:,15:111]
+#             weekday_avg = df_test_weekday.iloc[0,:]
 
-            df_test_weekend = df_test[df_test[4] == 1]
-            df_test_weekend = df_test_weekend.iloc[:,15:111]
-            weekend_avg = df_test_weekend.iloc[0,:]
+#             df_test_weekend = df_test[df_test[4] == 1]
+#             df_test_weekend = df_test_weekend.iloc[:,15:111]
+#             weekend_avg = df_test_weekend.iloc[0,:]
 
-            averages = pd.DataFrame()
-            averages['weekday'] = weekday_avg
-            averages['weekend'] = weekend_avg
-            averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/averages.csv', index=False)
+#             averages = pd.DataFrame()
+#             averages['weekday'] = weekday_avg
+#             averages['weekend'] = weekend_avg
+#             averages.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/averages.csv', index=False)
 
-            # df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
-            # df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
-            # df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
-            # header = ['t','dayofweek','weekend','y_t_1','y']
-            # df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
-        except Exception as e:
-            print(e)
+#             # df_test = df_test.drop(columns=df_test.iloc[:, 15:111])      
+#             # df_test = df_test.drop(columns=df_test.iloc[:, 2:4])
+#             # df_test = df_test.drop(columns=df_test.iloc[:, 3:12])
+#             # header = ['t','dayofweek','weekend','y_t_1','y']
+#             # df_test.to_csv('/home/doktormatte/MA_SciComp/' + dirname + '/Loads/' + str(num) +'_occup.csv',encoding='utf-8', index=False, header=header)
+#         except Exception as e:
+#             print(e)
         
             
 # cols = list(range(1,102))            
