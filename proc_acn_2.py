@@ -146,6 +146,11 @@ start = datetime.datetime.strptime("9/15/2018 00:00", '%m/%d/%Y %H:%M')
 end = df_acn['disconnectTime'].max()
 # end = datetime.datetime.strptime("3/1/2020 00:00", '%m/%d/%Y %H:%M')
 
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_2/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_2/Occup/ref_ts.csv', encoding='utf-8', index=False)
+
 stations = list(set(list(df_acn['stationID'])))
 
 stat_backbones = dict.fromkeys(stations)
@@ -221,6 +226,7 @@ for stat_name in stations:
     print(stat_name)
     
 print('\n')    
+backbone_num = 1
 
 for stat_name in stations:
 
@@ -275,6 +281,26 @@ for stat_name in stations:
         
         # glob_weekend_averages.loc[glob_weekend_averages['timeslot'] == i, 'avg_value'] += avg_value  
     occup_weekend_averages[stat_name] = occup_avg_weekend
+    
+    
+    # loads_ts = pd.DataFrame(columns=['date_time', 'value'])
+    loads_ts = pd.DataFrame(columns=['date_time'])
+    loads_ts['date_time'] = backbone_load['date_time']
+    
+    # loads_ts_train = backbone_load['value'][:n_train]
+    # loads_ts_train = (loads_ts_train-min(loads_ts_train))/(max(loads_ts_train)-min(loads_ts_train)) 
+    # loads_ts_test = backbone_load['value'][n_train:]
+    # loads_ts_test = (loads_ts_test-min(loads_ts_test))/(max(loads_ts_test)-min(loads_ts_test)) 
+    # loads_ts['value'] = pd.concat([loads_ts_train, loads_ts_test])  
+    
+    loads_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_2/Loads/ts.csv', encoding='utf-8', index=False)
+    
+    
+    occup_ts = pd.DataFrame(columns=['date_time'])
+    occup_ts['date_time'] = backbone_occup['date_time']
+    occup_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_2/Occup/ts.csv', encoding='utf-8', index=False)
+    
+    # loads_ts['value'] = backbone_load['value']
     
     print(stat_name)
     

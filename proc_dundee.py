@@ -175,6 +175,13 @@ stations = list(set(list(df_dundee['CP ID'])))
 # stations = [50338.0]
 start = cutoff
 end = datetime.datetime.strptime("2018-12-06 00:00", '%Y-%m-%d %H:%M')
+
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Dundee/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Dundee/Occup/ref_ts.csv', encoding='utf-8', index=False)
+
+
 # end = datetime.datetime.strptime("2017-03-11 00:00", '%Y-%m-%d %H:%M')
 # end = df_dundee['End_Timestamp'].max()
 

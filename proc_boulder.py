@@ -142,6 +142,11 @@ df_boulder.Start_Date___Time = df_boulder.Start_Date___Time.map(roundTime)
 # start = df_boulder['Start_Date___Time'].min()
 start = cutoff
 end = datetime.datetime.strptime("2020/03/01 00:00:00+00", '%Y/%m/%d %H:%M:%S+%f')
+
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Boulder/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Boulder/Occup/ref_ts.csv', encoding='utf-8', index=False)
 # end = df_boulder['End_Date___Time'].max()
 
 df_boulder['z_score'] = np.abs(stats.zscore(df_boulder['Charging_Time__hh_mm_ss_']))

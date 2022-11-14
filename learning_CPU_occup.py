@@ -107,6 +107,7 @@ accuracies = []
 models = []
 architectures = ['LSTM', 'GRU', 'BiLSTM', 'Stacked', 'Conv1D', 'CNN_LSTM', 'ConvLSTM']
 dirs = ['ACN_1', 'ACN_2', 'Boulder', 'Palo_Alto', 'Dundee', 'Perth_Kinross']
+dirs.reverse()
 summary_cols = ['names','layers','dataset','accuracy']
 train_test_split = 0.7
 
@@ -309,7 +310,8 @@ for i in range(2000):
                         accuracies = []
                         model = None
                         for j in range(1,53):
-                            num = random.randint(1,53)
+                            # num = random.randint(1,53)
+                            num = j
                             try:
                                 X_train,y_train,X_test,y_test = read_data("/home/doktormatte/MA_SciComp/" + dirname + "/Occup/" + str(num) + "_red.csv", n_steps_in, n_steps_out, n_features, architecture)
                             except Exception:

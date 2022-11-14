@@ -174,6 +174,11 @@ stations = list(set(list(df_pk['CP ID'])))
 start = cutoff
 end = datetime.datetime.strptime("2019-09-01 00:00", '%Y-%m-%d %H:%M')
 
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Perth_Kinross/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Perth_Kinross/Occup/ref_ts.csv', encoding='utf-8', index=False)
+
 
 stat_backbones = dict.fromkeys(stations)
 load_weekday_averages = dict.fromkeys(stations)

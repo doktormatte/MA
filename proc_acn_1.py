@@ -141,6 +141,12 @@ df_acn['loadPerQuarter'] = df_acn.apply(lambda row: calc_quarter_load(row), axis
 start = datetime.datetime.strptime("5/10/2018 00:00", '%m/%d/%Y %H:%M')
 end = df_acn['disconnectTime'].max()
 
+
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_1/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/ACN_1/Occup/ref_ts.csv', encoding='utf-8', index=False)
+
 stations = list(set(list(df_acn['stationID'])))
 
 stat_backbones = dict.fromkeys(stations)

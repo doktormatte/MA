@@ -105,7 +105,7 @@ for dirname in dirs:
             rng_s_1=[s for s in range(3)] 
             step_set=[rng_s_1]
             n_steps_out=36
-            model = linear_model.LinearRegression()
+            model = linear_model.LogisticRegression()
 
             model.fit(X_train, y_train)
             t_target = n_steps_out
@@ -132,19 +132,18 @@ for dirname in dirs:
                   
                 res_temp=[]
                 for rr in step_set: 
-                    _rmse = mean_squared_error(y_obs[i,rr], yhat[i,rr], squared=False)
-                    # _acc   = accuracy_score(y_obs[i,rr], yhat[i,rr])
-                    # _pre   = precision_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
-                    # _recall= recall_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
-                    # _f1    = f1_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
-                    res_temp=np.append(res_temp,[1.0 - _rmse, 0.0,0.0,0.0],0)
+                    _acc   = accuracy_score(y_obs[i,rr], yhat[i,rr])
+                    _pre   = precision_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
+                    _recall= recall_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
+                    _f1    = f1_score(y_obs[i,rr], yhat[i,rr],zero_division=1)
+                    res_temp=np.append(res_temp,[_acc, _pre,_recall,_f1],0)
                 
                 res_all.append(res_temp) 
 
             mean_accuracy = np.mean(res_all,axis=0)[0]
             
             result = pd.DataFrame(columns=summary_cols)
-            result['layers'] = ['LinRegr']
+            result['layers'] = ['LogRegr']
             result['names'] = 'None'
             result['dataset'] = dirname + '_' + str(num)
             result['accuracy'] = mean_accuracy

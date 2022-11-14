@@ -163,6 +163,12 @@ stations = list(set(list(df_palo_alto['Station Name'])))
 # start = df_palo_alto['Start Date'].min()
 start = cutoff
 end = datetime.datetime.strptime("3/1/2020 00:00", '%m/%d/%Y %H:%M')
+
+ref_ts = pd.DataFrame({'date_time': pd.date_range(start, end, freq="15min")})
+ref_ts.set_index('date_time')
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Palo_Alto/Loads/ref_ts.csv', encoding='utf-8', index=False)
+ref_ts.to_csv('/home/doktormatte/MA_SciComp/Palo_Alto/Occup/ref_ts.csv', encoding='utf-8', index=False)
+
 # end = df_palo_alto['End Date'].max()
 
 
